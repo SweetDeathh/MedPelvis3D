@@ -1,0 +1,29 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Python distribution
+build/
+dist/
+*.egg-info/
+
+# Local data — must NEVER be committed
+medpelvis3d/
+*.nii.gz
+*.stl
+*.npy
+*.fcsv
+data/
+
+# Output / cache
+*.csv.bak
+*.tmp
+*.log
