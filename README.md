@@ -58,7 +58,7 @@ the archives into a working directory before running these scripts.
 #   annotations.zip                       (~220 KB)
 #   patient_metadata.csv
 #   landmark_anatomical_mapping.csv
-#   samples/                              (3 example cases, uncompressed)
+#   samples.zip                           (3 example cases, uncompressed after extraction)
 ```
 
 Unzip into a single directory:
@@ -72,7 +72,7 @@ medpelvis3d/
   annotations/               600001-Table-XYZ.CSV, ...
   patient_metadata.csv
   landmark_anatomical_mapping.csv
-  samples/                   600001/, 600003/, 600052/
+  samples/                   600001/, 600003/, 600052/  (from samples.zip)
 ```
 
 ### 2. Install dependencies

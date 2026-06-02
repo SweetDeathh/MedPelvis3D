@@ -3,8 +3,7 @@
 This document shows the typical workflow against a single example case
 (600001) from the **samples/** folder of the Zenodo release.
 
-After downloading the example cases and placing them under `samples/`, your
-directory looks like
+After downloading and extracting `samples.zip`, your directory looks like
 
 ```
 medpelvis3d/
