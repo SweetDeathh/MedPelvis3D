@@ -1,9 +1,10 @@
 # MedPelvis3D — basic usage walkthrough
 
 This document shows the typical workflow against a single example case
-(600001) from the **samples/** folder of the figshare release.
+(600001) from the **samples/** folder of the Zenodo release.
 
-After downloading and unzipping `samples.zip`, your directory looks like
+After downloading the example cases and placing them under `samples/`, your
+directory looks like
 
 ```
 medpelvis3d/

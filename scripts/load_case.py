@@ -10,7 +10,7 @@ Usage
 
 The function returns a :class:`Case` namedtuple with handles to all
 modalities released for that subject.  The dataset directory is expected to
-follow the layout produced by unzipping the figshare archives::
+follow the layout produced by unzipping the Zenodo archives::
 
     medpelvis3d/
       ct_nifti/<case_id>.nii.gz

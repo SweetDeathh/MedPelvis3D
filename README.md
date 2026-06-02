@@ -5,9 +5,9 @@ A 3D pelvic anatomy dataset for anatomical landmark detection.
 This repository contains **example scripts and utilities** for working with the
 **MedPelvis3D** dataset. The dataset itself (CT volumes, segmentation masks,
 surface meshes, landmark coordinates, point clouds, and metadata) is hosted on
-figshare and is not stored in this repository.
+Zenodo and is not stored in this repository.
 
-- **Dataset DOI**: [10.6084/m9.figshare.30891254](https://doi.org/10.6084/m9.figshare.30891254)
+- **Dataset DOI**: [10.5281/zenodo.20473747](https://doi.org/10.5281/zenodo.20473747)
 - **Companion paper**: *MedPelvis3D: a 3D pelvic anatomy dataset for anatomical landmark detection* (Scientific Data, under review)
 
 ## Overview
@@ -42,7 +42,7 @@ MedPelvis3D/
     └── basic_usage.ipynb              walk through the typical workflow
 ```
 
-The dataset itself is **not** included; download it from figshare and unzip
+The dataset itself is **not** included; download it from Zenodo and unzip
 the archives into a working directory before running these scripts.
 
 ## Quick start
@@ -50,7 +50,7 @@ the archives into a working directory before running these scripts.
 ### 1. Download the dataset
 
 ```bash
-# Each archive is downloaded separately from figshare:
+# Each archive is downloaded separately from Zenodo:
 #   ct_nifti_part{1..4}of4.zip            (~13.8 GB total)
 #   masks_nifti.zip                       (~29 MB)
 #   stl_models.zip                        (~2.1 GB)
@@ -58,7 +58,7 @@ the archives into a working directory before running these scripts.
 #   annotations.zip                       (~220 KB)
 #   patient_metadata.csv
 #   landmark_anatomical_mapping.csv
-#   samples.zip                           (3 example cases, uncompressed)
+#   samples/                              (3 example cases, uncompressed)
 ```
 
 Unzip into a single directory:
@@ -72,6 +72,7 @@ medpelvis3d/
   annotations/               600001-Table-XYZ.CSV, ...
   patient_metadata.csv
   landmark_anatomical_mapping.csv
+  samples/                   600001/, 600003/, 600052/
 ```
 
 ### 2. Install dependencies
@@ -127,8 +128,8 @@ If you use MedPelvis3D, please cite the dataset and the companion paper:
   title     = {MedPelvis3D: a 3D pelvic anatomy dataset for anatomical
                landmark detection},
   year      = {2026},
-  publisher = {figshare},
-  doi       = {10.6084/m9.figshare.30891254}
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.20473747}
 }
 ```
 
@@ -138,7 +139,7 @@ is published.
 ## License
 
 - **Code in this repository**: MIT License (see [LICENSE](LICENSE))
-- **Dataset on figshare**: CC-BY-4.0 (per the figshare deposit)
+- **Dataset on Zenodo**: CC-BY-4.0 (per the Zenodo deposit)
 
 ## Contact
 
