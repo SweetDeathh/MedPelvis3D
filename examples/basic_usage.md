@@ -69,9 +69,9 @@ python scripts/resample_pointcloud.py \
     --out 600001-points-25000.npy
 ```
 
-This recreates a Poisson-disk surface sample at any density `N`.  The
-released `point_clouds_50000/600001-points-50000.npy` was produced the same
-way with `N = 50000`.
+This generates an approximately uniform/even surface sample at any density
+`N`. The released 50,000-point clouds provide the reference representation;
+this script is a reproducible utility for creating alternative resolutions.
 
 ## 4. Reproduce the geometric statistics
 

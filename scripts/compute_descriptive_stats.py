@@ -31,9 +31,9 @@ import pandas as pd
 
 # Reuse helpers from compute_geometry_stats.py
 try:
-    from compute_geometry_stats import case_metrics
+    from compute_geometry_stats import case_id_from_nifti, case_metrics
 except ImportError:  # when imported as scripts.compute_descriptive_stats
-    from scripts.compute_geometry_stats import case_metrics
+    from scripts.compute_geometry_stats import case_id_from_nifti, case_metrics
 
 
 METRICS = ['inter_asis_mm', 'bbox_width_mm', 'bbox_depth_mm',
@@ -94,7 +94,8 @@ def main() -> None:
     args = p.parse_args()
 
     root = Path(args.root)
-    case_ids = sorted(p.stem for p in (root / 'ct_nifti').glob('*.nii.gz'))
+    case_ids = sorted(case_id_from_nifti(p)
+                      for p in (root / 'ct_nifti').glob('*.nii.gz'))
     print(f'cases: {len(case_ids)}')
 
     rows = [case_metrics(root, cid) for cid in case_ids]

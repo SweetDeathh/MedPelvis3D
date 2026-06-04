@@ -12,7 +12,7 @@ Usage
 Inputs read
 -----------
     <root>/point_clouds_50000/<case>-points-50000.npy
-    <root>/stl_models/<case>-{LeftHipBone,RightHipBone,Sacrum}.stl
+    <root>/masks_nifti/<case>-mask.nii.gz
     <root>/annotations/<case>-Table-XYZ.CSV
     <root>/patient_metadata.csv     (case_id, sex)
 
@@ -27,6 +27,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+
+def case_id_from_nifti(path: Path) -> str:
+    """Return case ID from either ``600001.nii.gz`` or a standard suffix."""
+    name = path.name
+    if name.endswith('.nii.gz'):
+        return name[:-7]
+    return path.stem
 
 
 def load_landmarks(root: Path, case_id: str) -> pd.DataFrame:
@@ -54,16 +62,14 @@ def bbox_dimensions(points: np.ndarray) -> tuple[float, float, float]:
 
 
 def bone_volume_ml(root: Path, case_id: str) -> float:
-    """Total enclosed volume of the three pelvic STL meshes, in mL (= cm^3)."""
-    import trimesh
-    stl_dir = root / 'stl_models'
-    pieces = [
-        trimesh.load_mesh(stl_dir / f'{case_id}-LeftHipBone.stl'),
-        trimesh.load_mesh(stl_dir / f'{case_id}-RightHipBone.stl'),
-        trimesh.load_mesh(stl_dir / f'{case_id}-Sacrum.stl'),
-    ]
-    # Volume in mm^3; divide by 1000 for mL
-    vol_mm3 = sum(abs(m.volume) for m in pieces if m.is_volume)
+    """Total pelvic bone mask volume, in mL (= cm^3)."""
+    import SimpleITK as sitk
+    mask_path = root / 'masks_nifti' / f'{case_id}-mask.nii.gz'
+    mask = sitk.ReadImage(str(mask_path))
+    arr = sitk.GetArrayFromImage(mask)
+    spacing = mask.GetSpacing()  # mm, ordered as x/y/z
+    voxel_volume_mm3 = float(spacing[0] * spacing[1] * spacing[2])
+    vol_mm3 = int(np.count_nonzero(arr > 0)) * voxel_volume_mm3
     return float(vol_mm3 / 1000.0)
 
 
@@ -105,7 +111,8 @@ def main() -> None:
     if args.cases:
         case_ids = [c.strip() for c in args.cases.split(',')]
     else:
-        case_ids = sorted(p.stem for p in (root / 'ct_nifti').glob('*.nii.gz'))
+        case_ids = sorted(case_id_from_nifti(p)
+                          for p in (root / 'ct_nifti').glob('*.nii.gz'))
     print(f'cases: {len(case_ids)}')
 
     rows = [case_metrics(root, cid) for cid in case_ids]

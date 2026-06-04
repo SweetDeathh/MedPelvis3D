@@ -1,9 +1,9 @@
-"""Resample the surface mesh of a case to N points using Poisson disk sampling.
+"""Resample the surface mesh of a case to N approximately uniform points.
 
-The released `point_clouds_50000/<case>-points-50000.npy` files were produced
-this way with N=50,000 from the union of LeftHipBone, RightHipBone, and
-Sacrum STL meshes.  This script lets you regenerate the cloud at any N
-(e.g. 25,000 / 75,000) for downstream model training.
+This utility samples the union of LeftHipBone, RightHipBone, and Sacrum STL
+meshes with Trimesh's even surface sampler, falling back to uniform surface
+sampling if needed. It can generate point clouds at any N (e.g. 25,000 /
+75,000) for downstream model training.
 
 Usage
 -----
@@ -34,7 +34,7 @@ def union_pelvis_mesh(root: Path, case_id: str):
 
 
 def sample_points(mesh, n: int, seed: int = 0) -> np.ndarray:
-    """Poisson disk surface sample, falling back to uniform if Poisson fails.
+    """Approximately even surface sample, falling back to uniform if needed.
 
     Returns an (n, 3) ndarray of points in mm world coordinates.
     """

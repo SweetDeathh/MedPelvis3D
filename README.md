@@ -89,7 +89,7 @@ from scripts.load_case import load_case
 
 case = load_case('medpelvis3d', '600001')
 print(case.landmarks.head())
-print(f'Mesh vertices: {case.left_hip.n_points}')
+print(f'Mesh vertices: {case.left_hip.vertices.shape[0]}')
 print(f'Point cloud shape: {case.points.shape}')
 ```
 
