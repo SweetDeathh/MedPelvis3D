@@ -87,14 +87,15 @@ python scripts/compute_descriptive_stats.py --root medpelvis3d \
 These reproduce **Table 2** of the companion paper and Supplementary
 Tables S2 / S3.
 
-## 5. Compute inter-operator reliability
+## 5. Compute annotation reliability
 
-If you have a second annotator's CSVs in the same per-case format:
+If you have repeated annotation CSVs in the same per-case format, the same
+script can be used for intra-operator or inter-operator reliability:
 
 ```bash
-python scripts/compute_inter_operator_ci.py \
-    --rater1-dir annotations_release \
-    --rater2-dir annotations_second_pass \
+python scripts/compute_annotation_reliability.py \
+    --annotation-a-dir annotations_release \
+    --annotation-b-dir annotations_repeat \
     --cases 600110,600111,600112,600114,600115,600116,600119,600120,600121,600122 \
     --out supp_S4_per_landmark_CI.csv
 ```

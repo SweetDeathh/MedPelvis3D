@@ -1,20 +1,21 @@
-"""Compute inter-operator landmark reliability for a re-annotated case subset.
+"""Compute landmark annotation reliability for a repeated-annotation subset.
 
-Given two sets of landmark CSVs from independent annotators (e.g. the
-released annotations and a senior annotator's second pass on the same cases),
-this script reports the per-landmark and pooled inter-operator agreement
-metrics used in Supplementary Table S4 of the companion paper:
+Given two sets of landmark CSVs from repeated annotations of the same cases,
+this script reports the per-landmark and pooled annotation agreement metrics
+used in Supplementary Table S4 of the companion paper. The same script can be
+used for either intra-operator or inter-operator reliability, depending on
+which two annotation directories are supplied:
 
     - mean Euclidean distance (mm) between matched landmarks
     - 95% confidence interval of the mean (case-level n, t-distribution)
     - per-landmark stratified statistics
-    - inter-operator ICC(2,1) on raw x / y / z coordinates
+    - ICC(2,1) on raw x / y / z coordinates
 
 Usage
 -----
-    python scripts/compute_inter_operator_ci.py \\
-        --rater1-dir annotations_release \\
-        --rater2-dir annotations_second_pass \\
+    python scripts/compute_annotation_reliability.py \\
+        --annotation-a-dir annotations_release \\
+        --annotation-b-dir annotations_repeat \\
         --cases 600110,600111,600112 \\
         --out per_landmark_CI.csv
 
@@ -25,10 +26,6 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-
-import numpy as np
-import pandas as pd
-from scipy import stats
 
 
 def load_landmarks(dir_path: Path, case_id: str) -> pd.DataFrame:
@@ -101,14 +98,21 @@ def coordinate_icc(long_df: pd.DataFrame, axis: str) -> dict:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
-    p.add_argument('--rater1-dir', required=True,
-                   help='directory containing rater 1 CSVs (one per case)')
-    p.add_argument('--rater2-dir', required=True,
-                   help='directory containing rater 2 CSVs (one per case)')
+    p.add_argument('--annotation-a-dir', '--rater1-dir', dest='rater1_dir',
+                   required=True,
+                   help='directory containing annotation set A CSVs (one per case)')
+    p.add_argument('--annotation-b-dir', '--rater2-dir', dest='rater2_dir',
+                   required=True,
+                   help='directory containing annotation set B CSVs (one per case)')
     p.add_argument('--cases', required=True,
                    help='comma-separated case IDs')
     p.add_argument('--out', help='per-landmark CSV output path')
     args = p.parse_args()
+
+    global np, pd, stats
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
 
     rater1 = Path(args.rater1_dir)
     rater2 = Path(args.rater2_dir)
@@ -121,7 +125,7 @@ def main() -> None:
     # Pooled mean ± 95% CI (case-level)
     case_means = long.groupby('case_id')['dist_mm'].mean().values
     pooled = mean_with_ci(case_means)
-    print(f'\nPooled inter-operator agreement (case-level n = {pooled["n"]}):')
+    print(f'\nPooled annotation agreement (case-level n = {pooled["n"]}):')
     print(f'  Mean ± SD:  {pooled["mean"]:.2f} ± {pooled["sd"]:.2f} mm')
     print(f'  95% CI:     [{pooled["ci_lo"]:.2f}, {pooled["ci_hi"]:.2f}] mm')
 

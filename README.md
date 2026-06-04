@@ -36,7 +36,8 @@ MedPelvis3D/
 │   ├── resample_pointcloud.py         resample the surface mesh to N points
 │   ├── compute_geometry_stats.py      inter-ASIS, bounding box, bone volume
 │   ├── compute_descriptive_stats.py   Min/Q1/Mean/SD/Median/IQR/Q3/Max
-│   ├── compute_inter_operator_ci.py   annotation reliability statistics and confidence intervals
+│   ├── compute_annotation_reliability.py
+│   │                                  intra- and inter-operator reliability statistics
 │   └── apply_anatomical_mapping.py    join CSV landmarks with the mapping table
 └── examples/
     └── basic_usage.ipynb              walk through the typical workflow
