@@ -7,7 +7,7 @@ This repository contains **example scripts and utilities** for working with the
 surface meshes, landmark coordinates, point clouds, and metadata) is hosted on
 Zenodo and is not stored in this repository.
 
-- **Dataset DOI**: [10.5281/zenodo.20473747](https://doi.org/10.5281/zenodo.20473747)
+- **Dataset DOI**: [10.5281/zenodo.20520568](https://doi.org/10.5281/zenodo.20520568)
 - **Companion paper**: *MedPelvis3D: a 3D pelvic anatomy dataset for anatomical landmark detection* (Scientific Data, under review)
 
 ## Overview
@@ -36,7 +36,7 @@ MedPelvis3D/
 │   ├── resample_pointcloud.py         resample the surface mesh to N points
 │   ├── compute_geometry_stats.py      inter-ASIS, bounding box, bone volume
 │   ├── compute_descriptive_stats.py   Min/Q1/Mean/SD/Median/IQR/Q3/Max
-│   ├── compute_inter_operator_ci.py   inter-operator reliability (mean ± CI)
+│   ├── compute_inter_operator_ci.py   annotation reliability statistics and confidence intervals
 │   └── apply_anatomical_mapping.py    join CSV landmarks with the mapping table
 └── examples/
     └── basic_usage.ipynb              walk through the typical workflow
@@ -58,7 +58,7 @@ the archives into a working directory before running these scripts.
 #   annotations.zip                       (~220 KB)
 #   patient_metadata.csv
 #   landmark_anatomical_mapping.csv
-#   samples.zip                           (3 example cases, uncompressed after extraction)
+#   samples.zip                           (5 example cases, uncompressed after extraction)
 ```
 
 Unzip into a single directory:
@@ -72,7 +72,7 @@ medpelvis3d/
   annotations/               600001-Table-XYZ.CSV, ...
   patient_metadata.csv
   landmark_anatomical_mapping.csv
-  samples/                   600001/, 600003/, 600052/  (from samples.zip)
+  samples/                   600001/, 600002/, 600003/, 600004/, 600052/  (from samples.zip)
 ```
 
 ### 2. Install dependencies
@@ -129,7 +129,7 @@ If you use MedPelvis3D, please cite the dataset and the companion paper:
                landmark detection},
   year      = {2026},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20473747}
+  doi       = {10.5281/zenodo.20520568}
 }
 ```
 
