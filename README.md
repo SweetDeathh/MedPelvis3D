@@ -105,14 +105,14 @@ These reproduce Table 2 (geometric parameters) and Supplementary Tables S2/S3
 
 ## Landmark naming
 
-Each landmark has three identifiers in the released CSVs:
+Each landmark includes anatomical naming fields in the released CSVs:
 
 | Column | Example |
 |---|---|
 | `short_name` | `ASIS_L` |
 | `anatomical_name_en` | `Left anterior superior iliac spine` |
 
-`short_name` is the primary identifier used in the released CSV `label` column.
+`short_name` is the primary identifier column used in the released landmark CSV files.
 `landmark_anatomical_mapping.csv` provides the full table linking each
 short name to its English anatomical term, region (`Left hemipelvis` /
 `Right hemipelvis` / `Sacrum`), and side (`Left` / `Right` / `Midline`).
