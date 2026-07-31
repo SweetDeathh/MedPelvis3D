@@ -38,6 +38,9 @@ MedPelvis3D/
 │   ├── compute_descriptive_stats.py   Min/Q1/Mean/SD/Median/IQR/Q3/Max
 │   ├── compute_annotation_reliability.py
 │   │                                  intra- and inter-operator reliability statistics
+│   ├── rebuild_stl_from_masks.py      reconstruct STL surfaces from labelled NIfTI masks
+│   ├── mesh_qc_and_repair.py           audit STL topology and optionally apply conservative repair
+│   ├── package_cases.py                create one complete ZIP archive per subject
 │   └── apply_anatomical_mapping.py    join CSV landmarks with the mapping table
 └── examples/
     └── basic_usage.ipynb              walk through the typical workflow
@@ -102,6 +105,59 @@ python scripts/compute_descriptive_stats.py --root medpelvis3d
 
 These reproduce Table 2 (geometric parameters) and Supplementary Tables S2/S3
 (full descriptive statistics) in the companion paper.
+
+### 5. Rebuild STL surfaces from segmentation masks
+
+The release mesh-generation procedure is reproducible from the labelled NIfTI
+masks. The script uses the Lewiner marching-cubes implementation in
+`scikit-image`, applies each NIfTI affine, converts the result to the release
+LPS coordinate convention, and removes only disconnected zero-volume fragments.
+It does not smooth, decimate, or remesh the surface, and it never modifies the
+input masks. The released label convention is `1 = LeftHipBone`,
+`2 = RightHipBone`, and `3 = Sacrum`.
+
+Write rebuilt meshes to a separate directory and inspect the report before
+using them to replace any released files:
+
+```bash
+python scripts/rebuild_stl_from_masks.py \
+  --mask-dir medpelvis3d/masks_nifti \
+  --output-dir rebuilt_stl \
+  --report rebuilt_stl/mesh_qc.csv
+```
+
+The command refuses to overwrite an existing STL unless `--overwrite` is
+provided explicitly. The script assumes that the mask labels already follow
+the stated anatomical convention; it does not infer left/right side labels
+from landmarks.
+
+### 6. Audit or conservatively repair STL meshes
+
+```bash
+python scripts/mesh_qc_and_repair.py \
+  --input-dir rebuilt_stl \
+  --report rebuilt_stl/mesh_qc_with_self_intersections.csv \
+  --self-intersections
+```
+
+To write repaired copies without modifying the source files, add
+`--repair-dir repaired_stl --fill-simple-holes`. The repair sequence removes
+duplicate and degenerate faces, removes unreferenced vertices, fixes normals
+and winding, and optionally fills simple holes. It does not smooth, decimate,
+or remesh the surfaces. Review the CSV report before replacing any released
+mesh.
+
+### 7. Create one archive per subject
+
+```bash
+python scripts/package_cases.py \
+  --root medpelvis3d \
+  --output-dir case_archives
+```
+
+The command requires every case-level modality, writes `<case_id>.zip` files,
+adds a one-row `metadata.csv` to each archive, and records archive hashes and
+missing-file checks in `manifest.json`.
 
 ## Landmark naming
 
