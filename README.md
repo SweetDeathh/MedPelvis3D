@@ -7,7 +7,7 @@ This repository contains **example scripts and utilities** for working with the
 surface meshes, landmark coordinates, point clouds, and metadata) is hosted on
 Zenodo and is not stored in this repository.
 
-- **Dataset DOI**: [10.5281/zenodo.20520568](https://doi.org/10.5281/zenodo.20520568)
+- **Dataset DOI**: [10.5281/zenodo.20473746](https://doi.org/10.5281/zenodo.20473746)
 - **Companion paper**: *MedPelvis3D: a 3D pelvic anatomy dataset for anatomical landmark detection* (Scientific Data, under review)
 
 ## Overview
@@ -186,7 +186,7 @@ If you use MedPelvis3D, please cite the dataset and the companion paper:
                landmark detection},
   year      = {2026},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.20520568}
+  doi       = {10.5281/zenodo.20473746}
 }
 ```
 
