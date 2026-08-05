@@ -53,8 +53,11 @@ the archives into a working directory before running these scripts.
 
 ### 1. Download the dataset
 
+The Zenodo record is distributed as file-type archives plus case-level
+archives (89 case archives covering all 99 cases):
+
 ```bash
-# Each archive is downloaded separately from Zenodo:
+# File-type archives (batch processing):
 #   ct_nifti_part{1..4}of4.zip            (~13.8 GB total)
 #   masks_nifti.zip                       (~29 MB)
 #   stl_models.zip                        (~2.1 GB)
@@ -62,8 +65,18 @@ the archives into a working directory before running these scripts.
 #   annotations.zip                       (~220 KB)
 #   patient_metadata.csv
 #   landmark_anatomical_mapping.csv
-#   samples.zip                           (5 example cases, uncompressed after extraction)
+#   samples.zip                           (5 example cases)
+#
+# Case-level archives (case selection / individual review):
+#   79 single-case archives:  600001.zip, 600002.zip, ...
+#   10 two-case archives:     cases_600105_600107.zip, ... (the final 20 case
+#                             IDs are paired because Zenodo limits each record
+#                             to 100 uploaded files)
 ```
+
+Each case archive contains the de-identified CT volume, the segmentation mask,
+three corrected STL components (LeftHipBone / RightHipBone / Sacrum), the
+50,000-point reference cloud, the landmark CSV, and a one-row `metadata.csv`.
 
 Unzip into a single directory:
 
@@ -103,8 +116,11 @@ python scripts/compute_geometry_stats.py --root medpelvis3d
 python scripts/compute_descriptive_stats.py --root medpelvis3d
 ```
 
-These reproduce Table 2 (geometric parameters) and Supplementary Tables S2/S3
-(full descriptive statistics) in the companion paper.
+These reproduce Table 2 (inter-ASIS distance and total pelvic bone volume,
+computed as the sum of the enclosed volumes of the three STL components) and
+Supplementary Tables S2/S3 (full descriptive statistics) in the companion
+paper. The point-cloud bounding-box extents are coordinate-dependent and are
+not part of the published tables; pass `--include-bbox` if you need them.
 
 ### 5. Rebuild STL surfaces from segmentation masks
 

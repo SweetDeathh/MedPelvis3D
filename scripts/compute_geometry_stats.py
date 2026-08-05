@@ -1,19 +1,20 @@
 """Compute cohort-level geometric statistics for the MedPelvis3D dataset.
 
-This reproduces Table 2 of the companion paper (inter-ASIS distance,
-bounding-box width / depth / height, total bone volume), with optional
-sex stratification.
+This reproduces Table 2 of the companion paper (inter-ASIS distance and total
+pelvic bone volume), with optional bounding-box metrics (``--include-bbox``)
+and sex stratification.
 
 Usage
 -----
     python scripts/compute_geometry_stats.py --root medpelvis3d
     python scripts/compute_geometry_stats.py --root medpelvis3d --by-sex
+    python scripts/compute_geometry_stats.py --root medpelvis3d --include-bbox
 
 Inputs read
 -----------
-    <root>/point_clouds_50000/<case>-points-50000.npy
-    <root>/masks_nifti/<case>-mask.nii.gz
     <root>/annotations/<case>-Table-XYZ.CSV
+    <root>/stl_models/<case>-{LeftHipBone,RightHipBone,Sacrum}.stl
+    <root>/point_clouds_50000/<case>-points-50000.npy   (only with --include-bbox)
     <root>/patient_metadata.csv     (case_id, sex)
 
 Output
@@ -61,36 +62,39 @@ def bbox_dimensions(points: np.ndarray) -> tuple[float, float, float]:
     return float(extents[0]), float(extents[1]), float(extents[2])
 
 
-def bone_volume_ml(root: Path, case_id: str) -> float:
-    """Total pelvic bone mask volume, in mL (= cm^3)."""
-    import SimpleITK as sitk
-    mask_path = root / 'masks_nifti' / f'{case_id}-mask.nii.gz'
-    mask = sitk.ReadImage(str(mask_path))
-    arr = sitk.GetArrayFromImage(mask)
-    spacing = mask.GetSpacing()  # mm, ordered as x/y/z
-    voxel_volume_mm3 = float(spacing[0] * spacing[1] * spacing[2])
-    vol_mm3 = int(np.count_nonzero(arr > 0)) * voxel_volume_mm3
-    return float(vol_mm3 / 1000.0)
+def bone_volume_cm3(root: Path, case_id: str) -> float:
+    """Total pelvic bone volume, in cm^3: sum of the enclosed volumes of the
+    three STL components (LeftHipBone, RightHipBone, Sacrum). This matches the
+    definition reported in the companion paper (Table 2)."""
+    import trimesh
+    stl_dir = root / 'stl_models'
+    total = 0.0
+    for comp in ('LeftHipBone', 'RightHipBone', 'Sacrum'):
+        mesh = trimesh.load_mesh(stl_dir / f'{case_id}-{comp}.stl', process=False)
+        total += float(abs(mesh.volume))
+    return total
 
 
-def case_metrics(root: Path, case_id: str) -> dict:
+def case_metrics(root: Path, case_id: str, include_bbox: bool = False) -> dict:
     landmarks = load_landmarks(root, case_id)
-    pts_path = root / 'point_clouds_50000' / f'{case_id}-points-50000.npy'
-    pts = np.load(pts_path)
-    w, d, h = bbox_dimensions(pts)
-    return {
+    out = {
         'case_id': case_id,
         'inter_asis_mm': inter_asis_distance(landmarks),
-        'bbox_width_mm': w,
-        'bbox_depth_mm': d,
-        'bbox_height_mm': h,
-        'bone_volume_ml': bone_volume_ml(root, case_id),
+        'bone_volume_cm3': bone_volume_cm3(root, case_id),
     }
+    if include_bbox:
+        pts_path = root / 'point_clouds_50000' / f'{case_id}-points-50000.npy'
+        pts = np.load(pts_path)
+        w, d, h = bbox_dimensions(pts)
+        out.update({'bbox_width_mm': w, 'bbox_depth_mm': d, 'bbox_height_mm': h})
+    return out
 
 
-def summarise(df: pd.DataFrame, group_col: str = None) -> pd.DataFrame:
-    cols = ['inter_asis_mm', 'bbox_width_mm', 'bbox_depth_mm',
-            'bbox_height_mm', 'bone_volume_ml']
+def summarise(df: pd.DataFrame, group_col: str = None,
+              include_bbox: bool = False) -> pd.DataFrame:
+    cols = ['inter_asis_mm', 'bone_volume_cm3']
+    if include_bbox:
+        cols += ['bbox_width_mm', 'bbox_depth_mm', 'bbox_height_mm']
     if group_col:
         agg = df.groupby(group_col)[cols].agg(['mean', 'std', 'count'])
     else:
@@ -104,6 +108,9 @@ def main() -> None:
     p.add_argument('--cases', help='comma-separated subset; default: all')
     p.add_argument('--by-sex', action='store_true',
                    help='also report male / female stratified statistics')
+    p.add_argument('--include-bbox', action='store_true',
+                   help='also report point-cloud bounding-box extents (not part of '
+                        'the published Table 2; coordinate-dependent, not anatomical)')
     p.add_argument('--out', help='write per-case CSV to this path')
     args = p.parse_args()
 
@@ -115,11 +122,11 @@ def main() -> None:
                           for p in (root / 'ct_nifti').glob('*.nii.gz'))
     print(f'cases: {len(case_ids)}')
 
-    rows = [case_metrics(root, cid) for cid in case_ids]
+    rows = [case_metrics(root, cid, include_bbox=args.include_bbox) for cid in case_ids]
     df = pd.DataFrame(rows)
 
     print('\n=== Cohort-level metrics (mean ± SD, n) ===')
-    summary = summarise(df)
+    summary = summarise(df, include_bbox=args.include_bbox)
     print(summary.to_string())
 
     if args.by_sex:
@@ -127,7 +134,7 @@ def main() -> None:
         meta['case_id'] = meta['case_id'].astype(str).str.strip()
         df = df.merge(meta[['case_id', 'sex']], on='case_id', how='left')
         print('\n=== Sex-stratified ===')
-        print(summarise(df, group_col='sex').to_string())
+        print(summarise(df, group_col='sex', include_bbox=args.include_bbox).to_string())
 
     if args.out:
         df.round(4).to_csv(args.out, index=False)

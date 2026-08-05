@@ -36,16 +36,20 @@ except ImportError:  # when imported as scripts.compute_descriptive_stats
     from scripts.compute_geometry_stats import case_id_from_nifti, case_metrics
 
 
-METRICS = ['inter_asis_mm', 'bbox_width_mm', 'bbox_depth_mm',
-            'bbox_height_mm', 'bone_volume_ml']
+BASE_METRICS = ['inter_asis_mm', 'bone_volume_cm3']
+BBOX_METRICS = ['bbox_width_mm', 'bbox_depth_mm', 'bbox_height_mm']
 
 PRETTY = {
     'inter_asis_mm':   'Inter-ASIS distance (mm)',
+    'bone_volume_cm3': 'Total pelvic bone volume (cm³)',
     'bbox_width_mm':   'Bounding-box width (mm)',
     'bbox_depth_mm':   'Bounding-box depth (mm)',
     'bbox_height_mm':  'Bounding-box height (mm)',
-    'bone_volume_ml':  'Total pelvic bone volume (mL)',
 }
+
+
+def metrics(include_bbox: bool) -> list[str]:
+    return BASE_METRICS + (BBOX_METRICS if include_bbox else [])
 
 
 def descriptive_row(values: np.ndarray) -> dict:
@@ -66,18 +70,20 @@ def descriptive_row(values: np.ndarray) -> dict:
     }
 
 
-def build_table(df: pd.DataFrame, group: str | None = None) -> pd.DataFrame:
+def build_table(df: pd.DataFrame, group: str | None = None,
+                include_bbox: bool = False) -> pd.DataFrame:
     """Return a long-format descriptive table, one row per (group, metric)."""
     rows = []
+    ms = metrics(include_bbox)
     if group is None:
-        for m in METRICS:
+        for m in ms:
             row = descriptive_row(df[m].values)
             row['Metric'] = PRETTY[m]
             row['Group'] = 'All'
             rows.append(row)
     else:
         for g, sub in df.groupby(group):
-            for m in METRICS:
+            for m in ms:
                 row = descriptive_row(sub[m].values)
                 row['Metric'] = PRETTY[m]
                 row['Group'] = g
@@ -90,6 +96,9 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
     p.add_argument('--root', required=True)
     p.add_argument('--by-sex', action='store_true')
+    p.add_argument('--include-bbox', action='store_true',
+                   help='also report point-cloud bounding-box extents '
+                        '(coordinate-dependent, not part of the published tables)')
     p.add_argument('--out', help='write the descriptive table to this CSV')
     args = p.parse_args()
 
@@ -98,10 +107,10 @@ def main() -> None:
                       for p in (root / 'ct_nifti').glob('*.nii.gz'))
     print(f'cases: {len(case_ids)}')
 
-    rows = [case_metrics(root, cid) for cid in case_ids]
+    rows = [case_metrics(root, cid, include_bbox=args.include_bbox) for cid in case_ids]
     df = pd.DataFrame(rows)
 
-    overall = build_table(df, group=None)
+    overall = build_table(df, group=None, include_bbox=args.include_bbox)
     print('\n=== Descriptive statistics (cohort) ===')
     print(overall.round(2).to_string(index=False))
 
@@ -109,7 +118,7 @@ def main() -> None:
         meta = pd.read_csv(root / 'patient_metadata.csv', dtype=str)
         meta['case_id'] = meta['case_id'].astype(str).str.strip()
         df = df.merge(meta[['case_id', 'sex']], on='case_id', how='left')
-        per_sex = build_table(df, group='sex')
+        per_sex = build_table(df, group='sex', include_bbox=args.include_bbox)
         result = pd.concat([overall, per_sex], ignore_index=True)
         print('\n=== Descriptive statistics (by sex) ===')
         print(per_sex.round(2).to_string(index=False))

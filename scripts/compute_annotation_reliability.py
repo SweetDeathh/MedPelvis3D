@@ -7,9 +7,8 @@ used for either intra-operator or inter-operator reliability, depending on
 which two annotation directories are supplied:
 
     - mean Euclidean distance (mm) between matched landmarks
-    - 95% confidence interval of the mean (case-level n, t-distribution)
+    - 95% confidence interval of the mean (landmark-level n, t-distribution)
     - per-landmark stratified statistics
-    - ICC(2,1) on raw x / y / z coordinates
 
 Usage
 -----
@@ -76,26 +75,6 @@ def per_landmark_table(long_df: pd.DataFrame) -> pd.DataFrame:
                  'ci_lo', 'ci_hi', 'median', 'min', 'max']].sort_values('mean')
 
 
-def coordinate_icc(long_df: pd.DataFrame, axis: str) -> dict:
-    """Two-way random, single-rater absolute-agreement ICC(2,1)."""
-    import pingouin as pg
-    rater_a = long_df[['case_id', 'short_name', f'a_{axis}']].rename(
-        columns={f'a_{axis}': 'value'}).assign(rater='A')
-    rater_b = long_df[['case_id', 'short_name', f'b_{axis}']].rename(
-        columns={f'b_{axis}': 'value'}).assign(rater='B')
-    long = pd.concat([rater_a, rater_b], ignore_index=True)
-    long['target'] = long['case_id'].astype(str) + '_' + long['short_name']
-    icc = pg.intraclass_corr(data=long, targets='target', raters='rater',
-                              ratings='value')
-    row = icc[icc['Type'] == 'ICC2'].iloc[0]
-    return {
-        'axis': axis,
-        'ICC(2,1)': float(row['ICC']),
-        'CI_lo': float(row['CI95%'][0]),
-        'CI_hi': float(row['CI95%'][1]),
-    }
-
-
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split('\n', 1)[0])
     p.add_argument('--annotation-a-dir', '--rater1-dir', dest='rater1_dir',
@@ -122,22 +101,14 @@ def main() -> None:
     long = pd.concat([case_distances(rater1, rater2, cid) for cid in case_ids],
                       ignore_index=True)
 
-    # Pooled mean ± 95% CI (case-level)
-    case_means = long.groupby('case_id')['dist_mm'].mean().values
-    pooled = mean_with_ci(case_means)
-    print(f'\nPooled annotation agreement (case-level n = {pooled["n"]}):')
+    # Pooled mean ± 95% CI (landmark-level): each landmark's distance is first
+    # averaged across the repeated-annotation cases, then the mean / SD / 95% CI
+    # are computed across the landmark-level means (consistent with Table 3).
+    landmark_means = long.groupby('short_name')['dist_mm'].mean().values
+    pooled = mean_with_ci(landmark_means)
+    print(f'\nPooled annotation agreement (landmark-level n = {pooled["n"]}):')
     print(f'  Mean ± SD:  {pooled["mean"]:.2f} ± {pooled["sd"]:.2f} mm')
     print(f'  95% CI:     [{pooled["ci_lo"]:.2f}, {pooled["ci_hi"]:.2f}] mm')
-
-    # Coordinate-wise ICC
-    print('\nCoordinate-wise ICC(2,1):')
-    for axis in ('x', 'y', 'z'):
-        try:
-            r = coordinate_icc(long, axis)
-            print(f'  {axis}: {r["ICC(2,1)"]:.4f}  '
-                  f'95% CI [{r["CI_lo"]:.4f}, {r["CI_hi"]:.4f}]')
-        except Exception as e:
-            print(f'  {axis}: (skipped — {e})')
 
     # Per-landmark
     per_lm = per_landmark_table(long)

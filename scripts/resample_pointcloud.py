@@ -39,7 +39,6 @@ def sample_points(mesh, n: int, seed: int = 0) -> np.ndarray:
     Returns an (n, 3) ndarray of points in mm world coordinates.
     """
     import trimesh
-    rng = np.random.default_rng(seed)
     try:
         pts, _ = trimesh.sample.sample_surface_even(mesh, n, seed=seed)
         if pts.shape[0] >= n:
