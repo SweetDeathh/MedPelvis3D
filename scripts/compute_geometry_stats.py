@@ -65,13 +65,16 @@ def bbox_dimensions(points: np.ndarray) -> tuple[float, float, float]:
 def bone_volume_cm3(root: Path, case_id: str) -> float:
     """Total pelvic bone volume, in cm^3: sum of the enclosed volumes of the
     three STL components (LeftHipBone, RightHipBone, Sacrum). This matches the
-    definition reported in the companion paper (Table 2)."""
+    definition reported in the companion paper (Table 2).
+
+    STL coordinates are in millimetres, so trimesh volumes are in mm^3; the
+    conversion to cm^3 (division by 1000) is applied here."""
     import trimesh
     stl_dir = root / 'stl_models'
     total = 0.0
     for comp in ('LeftHipBone', 'RightHipBone', 'Sacrum'):
         mesh = trimesh.load_mesh(stl_dir / f'{case_id}-{comp}.stl', process=False)
-        total += float(abs(mesh.volume))
+        total += float(abs(mesh.volume)) / 1000.0
     return total
 
 
