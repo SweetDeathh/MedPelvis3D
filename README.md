@@ -21,8 +21,8 @@ collected at a tertiary clinical center. For each case, the dataset provides:
 - 57 expert-annotated 3D anatomical landmarks (CSV)
 - A 50,000-point reference point cloud sampled from the surface mesh (`.npy`)
 
-All coordinates are expressed in **millimetres** in the original patient-level
-CT (LPS) coordinate system.
+All coordinates are expressed in **millimetres** in the patient-level LPS
+physical coordinate system.
 
 ## Repository contents
 
@@ -75,7 +75,7 @@ archives (89 case archives covering all 99 cases):
 ```
 
 Each case archive contains the de-identified CT volume, the segmentation mask,
-three corrected STL components (LeftHipBone / RightHipBone / Sacrum), the
+three regenerated STL components (LeftHipBone / RightHipBone / Sacrum), the
 50,000-point reference cloud, the landmark CSV, and a one-row `metadata.csv`.
 
 Unzip into a single directory:
@@ -174,6 +174,13 @@ python scripts/package_cases.py \
 The command requires every case-level modality, writes `<case_id>.zip` files,
 adds a one-row `metadata.csv` to each archive, and records archive hashes and
 missing-file checks in `manifest.json`.
+
+Note on the released archives: `package_cases.py` generates one archive per
+case (99 archives), matching the per-case contents of the released archives.
+The final Zenodo release pairs the last 20 case IDs into 10 two-case archives
+(`cases_<case_id>_<case_id>.zip`) to remain within Zenodo's 100-file limit;
+that pairing is a separate release step and does not change the archive
+contents, so per-case contents remain fully reproducible from this script.
 
 ## Landmark naming
 
