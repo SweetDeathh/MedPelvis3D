@@ -8,7 +8,7 @@ surface meshes, landmark coordinates, point clouds, and metadata) is hosted on
 Zenodo and is not stored in this repository.
 
 - **Dataset DOI**: [10.5281/zenodo.20473746](https://doi.org/10.5281/zenodo.20473746)
-- **Companion paper**: *MedPelvis3D: a 3D pelvic anatomy dataset for anatomical landmark detection* (Scientific Data, under review)
+- **Companion paper**: *A CT-based 3D pelvic anatomy dataset of 99 healthy Chinese subjects for anatomical landmark detection* (Scientific Data, under review)
 
 ## Overview
 
@@ -21,8 +21,9 @@ collected at a tertiary clinical center. For each case, the dataset provides:
 - 57 expert-annotated 3D anatomical landmarks (CSV)
 - A 50,000-point reference point cloud sampled from the surface mesh (`.npy`)
 
-All coordinates are expressed in **millimetres** in the patient-level LPS
-physical coordinate system.
+All explicit XYZ coordinates in the released STL, NPY, and CSV files are expressed
+in **millimetres** in the patient-level LPS convention. The NIfTI volumes and masks
+retain their affine matrices for voxel-to-physical coordinate mapping.
 
 ## Repository contents
 
@@ -58,11 +59,11 @@ archives (89 case archives covering all 99 cases):
 
 ```bash
 # File-type archives (batch processing):
-#   ct_nifti_part{1..4}of4.zip            (~13.8 GB total)
-#   masks_nifti.zip                       (~29 MB)
-#   stl_models.zip                        (~2.1 GB)
-#   point_clouds_50000.zip                (~55 MB)
-#   annotations.zip                       (~220 KB)
+#   ct_nifti_part{1..4}of4.zip
+#   masks_nifti.zip
+#   stl_models.zip
+#   point_clouds_50000.zip
+#   annotations.zip
 #   patient_metadata.csv
 #   landmark_anatomical_mapping.csv
 #   samples.zip                           (5 example cases)
